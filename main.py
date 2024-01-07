@@ -11,6 +11,46 @@ OPERATOR_MAP = {'+': [1, Mathematical_operations.addition], '-': [1, Mathematica
                 '~': [6, Mathematical_operations.neg], '!': [6, Mathematical_operations.factorial]}
 
 
+def is_operator(char: str) -> bool:
+    """
+    Method returns whether the given char is an operator or not.
+    :param: a char.
+    :return: true if operator, false otherwise.
+    """
+    return char in OPERATOR_MAP.keys()
+
+
+def is_unary(operator: str) -> bool:
+    """
+    Method returns whether the given operator is unary or not.
+    :param: an operator.
+    :return: true if unary, false otherwise.
+    """
+    return is_operator(operator) and operator in ["!", "~"]
+
+
+def execute_operation(operand_stack: list, operator_stack: list):
+    """
+    Method calculate a simple binary/unary expression with two given lists, one for operators and second for operands.
+    Eventually the result is pushed into the operands stack.
+    :param: list represents a stack of operands.
+    :param: list represents a stack of operators.
+    """
+    operator = operator_stack.pop()
+    if is_unary(operator):
+        if operand_stack:
+            operand = float(operand_stack.pop())
+            operand_stack.append(list(map(OPERATOR_MAP[operator][1], [operand]))[0])
+        else:
+            raise SyntaxError("Your expression is invalid")
+    elif len(operand_stack) > 1:
+        operand1 = float(operand_stack.pop())
+        operand2 = float(operand_stack.pop())
+        operand_stack.append(list(map(OPERATOR_MAP[operator][1], [operand2], [operand1]))[0])
+    else:
+        raise SyntaxError("Your expression is invalid")
+
+
 def my_eval(expression: str):
     """
     Method responsible for calculations and Validity checks for user input.
@@ -47,8 +87,6 @@ def my_eval(expression: str):
                 raise SyntaxError("Invalid decimal number - cannot contain two dots or more!")
             i = j - 1
             operand_stack.append(float(single_operand))
-        else:
-            raise ValueError(f"Your expression contains invalid character(s) - '{expression[i]}'")
 
         i += 1
 
