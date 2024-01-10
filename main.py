@@ -63,32 +63,67 @@ def my_eval(expression: str):
     if not isinstance(expression, str):
         raise TypeError("str type expression excepted")
 
+    previous = ''
     operand_stack = []
-    i = 0
+    operator_stack = []
 
+    i = 0
     while i < len(expression):
         # Receiving a number.
         if expression[i].isdigit() or expression[i] == '.':
-            single_operand = ""
-            j = i
-            dots = 0
-            is_over = False
-            while j < len(expression) and not is_over:
-                if expression[j].isdigit():
-                    single_operand += expression[j]
-                    j += 1
-                elif expression[j] == '.':
-                    single_operand += expression[j]
-                    dots += 1
-                    j += 1
+            if previous == '' or (is_operator(previous) and previous != '!') or previous == '(':
+                previous = expression[i]
+                single_operand = ""
+                j = i
+                dots = 0
+                is_over = False
+                while j < len(expression) and not is_over:
+                    if expression[j].isdigit():
+                        single_operand += expression[j]
+                        j += 1
+                    elif expression[j] == '.':
+                        single_operand += expression[j]
+                        dots += 1
+                        j += 1
+                    else:
+                        is_over = True
+                if dots > 1:
+                    raise SyntaxError("Invalid decimal number - cannot contain two dots or more!")
+                i = j - 1
+                operand_stack.append(float(single_operand))
+            else:
+                raise SyntaxError("Your expression is invalid")
+        # Receiving an operator.
+        elif is_operator(expression[i]):
+            current = expression[i]
+            if not is_operator(previous):
+                if previous != '' and is_unary(current) and current != '!' and current != '-':
+                    raise SyntaxError(f"{current} cannot occur after operand")
+            elif previous == current != '!':
+                raise SyntaxError(f"{current} cannot occur in a row")
+            elif previous == current and current != '-' and current != '!':
+                raise SyntaxError(f"{current} cannot occur in row")
+            elif not is_unary(previous) and not is_unary(current) and current != '-':
+                raise SyntaxError(f"the follow operations: {previous}, {current} cannot occur in a row")
+
+            flag = True
+            previous = expression[i]
+            current_operator = OPERATOR_MAP[expression[i]]
+            while operator_stack and operand_stack and flag:
+                operator_top_stack = OPERATOR_MAP[operator_stack[-1]]
+                if current_operator[0] <= operator_top_stack[0]:
+                    execute_operation(operand_stack, operator_stack)
                 else:
-                    is_over = True
-            if dots > 1:
-                raise SyntaxError("Invalid decimal number - cannot contain two dots or more!")
-            i = j - 1
-            operand_stack.append(float(single_operand))
+                    flag = False
+            operator_stack.append(expression[i])
+        else:
+            raise ValueError(f"Your expression contains invalid character(s) - '{expression[i]}'")
 
         i += 1
+
+    # In case there are any operators left in the list (referred as stack)
+    while operator_stack:
+        execute_operation(operand_stack, operator_stack)
 
     if operand_stack:
         result = float(operand_stack.pop())
