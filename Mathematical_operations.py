@@ -124,3 +124,11 @@ def factorial(operand: float) -> float:
     for x in range(x, int(operand + 1)):
         result *= x
     return result
+
+
+def remove_parenthesis(operator_stack: list[str]):
+    """
+    Method pops the last item in the stack of operands, intentionally for removing the opening parenthesis.
+    :param: a stack of operators.
+    """
+    operator_stack.pop()

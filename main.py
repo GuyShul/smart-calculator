@@ -8,7 +8,8 @@ OPERATOR_MAP = {'+': [1, Mathematical_operations.addition], '-': [1, Mathematica
                 '%': [4, Mathematical_operations.modulo],
                 '@': [5, Mathematical_operations.average], '$': [5, Mathematical_operations.max_operand],
                 '&': [5, Mathematical_operations.min_operand],
-                '~': [6, Mathematical_operations.neg], '!': [6, Mathematical_operations.factorial]}
+                '~': [6, Mathematical_operations.neg], '!': [6, Mathematical_operations.factorial],
+                '(': [0, Mathematical_operations.remove_parenthesis]}
 
 
 def is_operator(char: str) -> bool:
@@ -27,6 +28,20 @@ def is_unary(operator: str) -> bool:
     :return: true if unary, false otherwise.
     """
     return is_operator(operator) and operator in ["!", "~"]
+
+
+def retrieve_until_parenthesis(operand_stack: list, operator_stack: list):
+    """
+    Method calculates unlimited amount of partial expressions until it encounters with opening parenthesis.
+    :param: list represents a stack of operands.
+    :param: list represents a stack of operators.
+    """
+    while operator_stack and operator_stack[-1] != '(' and operand_stack:
+        execute_operation(operand_stack, operator_stack)
+    if operator_stack:
+        operator_stack.pop()
+    else:
+        raise SyntaxError("Missing opening parenthesis")
 
 
 def execute_operation(operand_stack: list, operator_stack: list):
@@ -69,8 +84,15 @@ def my_eval(expression: str):
 
     i = 0
     while i < len(expression):
+        # Encountering opening parenthesis.
+        if expression[i] == '(':
+            if previous == '' or not is_unary(previous):
+                previous = expression[i]
+                operator_stack.append(expression[i])
+            else:
+                raise SyntaxError(f"'(' cannot occur after the following character - {previous}")
         # Receiving a number.
-        if expression[i].isdigit() or expression[i] == '.':
+        elif expression[i].isdigit() or expression[i] == '.':
             if previous == '' or (is_operator(previous) and previous != '!') or previous == '(':
                 previous = expression[i]
                 single_operand = ""
@@ -116,7 +138,14 @@ def my_eval(expression: str):
                 else:
                     flag = False
             operator_stack.append(expression[i])
-        else:
+        # Encountering closing parenthesis.
+        elif expression[i] == ')':
+            if not is_operator(previous) or previous == '!':
+                retrieve_until_parenthesis(operand_stack, operator_stack)
+                previous = expression[i]
+            else:
+                raise SyntaxError(f") is not valid after the follow operator: {previous}")
+        elif expression[i] != " " and expression[i] != "\t":
             raise ValueError(f"Your expression contains invalid character(s) - '{expression[i]}'")
 
         i += 1
@@ -126,8 +155,8 @@ def my_eval(expression: str):
         execute_operation(operand_stack, operator_stack)
 
     if operand_stack:
-        result = float(operand_stack.pop())
-        if result.is_integer():
+        result = operand_stack.pop()
+        if int(result) == result:
             print(int(result))
         else:
             print(result)
@@ -136,7 +165,14 @@ def my_eval(expression: str):
 
 
 def main():
-    my_eval(input("Insert expression: "))
+    while True:
+        try:
+            my_eval(input("Insert expression: "))
+        except EOFError:
+            print("Message: Shutting down...")
+            return
+        except Exception as e:
+            print(f"Error: {type(e).__name__}, Message: {e}")
 
 
 if __name__ == '__main__':
