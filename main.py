@@ -1,15 +1,22 @@
-import Mathematical_operations
+from Mathematical_operations import *
+from OperatorType import *
 
 # A dictionary represents all the available operators.
-# The key is the operator's symbol and the value is its precedence + a function in which the operands will be sent
-OPERATOR_MAP = {'+': [1, Mathematical_operations.addition], '-': [1, Mathematical_operations.subtraction],
-                '*': [2, Mathematical_operations.multiplication],
-                '/': [2, Mathematical_operations.division], '^': [3, Mathematical_operations.power],
-                '%': [4, Mathematical_operations.modulo],
-                '@': [5, Mathematical_operations.average], '$': [5, Mathematical_operations.max_operand],
-                '&': [5, Mathematical_operations.min_operand],
-                '~': [6, Mathematical_operations.neg], '!': [6, Mathematical_operations.factorial],
-                '(': [0, Mathematical_operations.remove_parenthesis]}
+# The key is the operator's symbol and the value is an instance of it's appropriate class,
+# including precedence and a function in which the operands will be sent.
+OPERATOR_MAP = {'+': BinaryOperator(1, addition),
+                '-': BinaryOperator(1, subtraction),
+                '*': BinaryOperator(2, multiplication),
+                '/': BinaryOperator(2, division),
+                '^': BinaryOperator(3, power),
+                '%': BinaryOperator(4, modulo),
+                '@': BinaryOperator(5, average),
+                '$': BinaryOperator(5, max_operand),
+                '&': BinaryOperator(5, min_operand),
+                '~': LeftUnaryOperator(6, neg),
+                '!': RightUnaryOperator(6, factorial),
+                '--': RightUnaryOperator(1, neg),
+                '(': LeftUnaryOperator(0, None)}
 
 
 def is_operator(char: str) -> bool:
@@ -21,13 +28,47 @@ def is_operator(char: str) -> bool:
     return char in OPERATOR_MAP.keys()
 
 
+def get_key(val):
+    for key, value in OPERATOR_MAP.items():
+        if val == value:
+            return key
+
+    return "Unknown key"
+
+
 def is_unary(operator: str) -> bool:
     """
     Method returns whether the given operator is unary or not.
     :param: an operator.
     :return: true if unary, false otherwise.
     """
-    return is_operator(operator) and operator in ["!", "~"]
+    return is_operator(operator) and operator in ["!", "~", "--"]
+
+
+def execute_operation(operand_stack: list, operator_stack: list):
+    """
+    Method calculate a simple binary/unary expression with two given lists, one for operators and second for operands.
+    Eventually the result is pushed into the operands stack.
+    :param: list represents a stack of operands.
+    :param: list represents a stack of operators.
+    """
+    key = operator_stack.pop()
+    operator = OPERATOR_MAP[key]
+    if key == '(':
+        raise SyntaxError("Missing closing parenthesis")
+
+    if isinstance(operator, UnaryOperator):
+        if operand_stack:
+            operand = operand_stack.pop()
+            operand_stack.append(operator.operation(operand))
+        else:
+            raise SyntaxError("Your expression is invalid")
+    elif len(operand_stack) > 1:
+        operand1 = operand_stack.pop()
+        operand2 = operand_stack.pop()
+        operand_stack.append(operator.operation(operand2, operand1))
+    else:
+        raise SyntaxError("Your expression is invalid")
 
 
 def retrieve_until_parenthesis(operand_stack: list, operator_stack: list):
@@ -42,28 +83,6 @@ def retrieve_until_parenthesis(operand_stack: list, operator_stack: list):
         operator_stack.pop()
     else:
         raise SyntaxError("Missing opening parenthesis")
-
-
-def execute_operation(operand_stack: list, operator_stack: list):
-    """
-    Method calculate a simple binary/unary expression with two given lists, one for operators and second for operands.
-    Eventually the result is pushed into the operands stack.
-    :param: list represents a stack of operands.
-    :param: list represents a stack of operators.
-    """
-    operator = operator_stack.pop()
-    if is_unary(operator):
-        if operand_stack:
-            operand = float(operand_stack.pop())
-            operand_stack.append(list(map(OPERATOR_MAP[operator][1], [operand]))[0])
-        else:
-            raise SyntaxError("Your expression is invalid")
-    elif len(operand_stack) > 1:
-        operand1 = float(operand_stack.pop())
-        operand2 = float(operand_stack.pop())
-        operand_stack.append(list(map(OPERATOR_MAP[operator][1], [operand2], [operand1]))[0])
-    else:
-        raise SyntaxError("Your expression is invalid")
 
 
 def my_eval(expression: str):
@@ -84,16 +103,16 @@ def my_eval(expression: str):
 
     i = 0
     while i < len(expression):
-        # Encountering opening parenthesis.
+        # Encountering an opening parenthesis.
         if expression[i] == '(':
-            if previous == '' or not is_unary(previous):
-                previous = expression[i]
+            if previous == '' or isinstance(previous, Operator):
+                previous = OPERATOR_MAP.get(expression[i])
                 operator_stack.append(expression[i])
             else:
-                raise SyntaxError(f"'(' cannot occur after the following character - {previous}")
+                raise SyntaxError("'(' cannot occur after an operand")
         # Receiving a number.
         elif expression[i].isdigit() or expression[i] == '.':
-            if previous == '' or (is_operator(previous) and previous != '!') or previous == '(':
+            if previous == '' or (isinstance(previous, (LeftUnaryOperator, BinaryOperator))):
                 previous = expression[i]
                 single_operand = ""
                 j = i
@@ -116,35 +135,59 @@ def my_eval(expression: str):
             else:
                 raise SyntaxError("Your expression is invalid")
         # Receiving an operator.
-        elif is_operator(expression[i]):
-            current = expression[i]
-            if not is_operator(previous):
-                if previous != '' and is_unary(current) and current != '!' and current != '-':
-                    raise SyntaxError(f"{current} cannot occur after operand")
-            elif previous == current != '!':
-                raise SyntaxError(f"{current} cannot occur in a row")
-            elif previous == current and current != '-' and current != '!':
-                raise SyntaxError(f"{current} cannot occur in row")
-            elif not is_unary(previous) and not is_unary(current) and current != '-':
-                raise SyntaxError(f"the follow operations: {previous}, {current} cannot occur in a row")
+        elif expression[i] in OPERATOR_MAP.keys():
+            current = OPERATOR_MAP.get(expression[i])
+            if isinstance(current, UnaryOperator):
+                if isinstance(current, LeftUnaryOperator):
+                    if isinstance(previous, UnaryOperator) and previous.precedence != 0:
+                        if current == previous:
+                            raise SyntaxError(
+                                f"'{expression[i]}' cannot occur in a row")
+                        else:
+                            raise SyntaxError(
+                                f"'{expression[i]}' cannot occur after an operator, it's must occur to the left of an "
+                                f"operand")
+                    elif not isinstance(previous, Operator) and previous != '':
+                        raise SyntaxError(
+                            f"'{expression[i]}' cannot occur after an operand, it's must occur to the left of an "
+                            f"operand")
+                elif isinstance(previous, (BinaryOperator, LeftUnaryOperator)):
+                    raise SyntaxError(
+                        f"'{expression[i]}' cannot occur after {get_key(previous)}, it's must occur after an operand or "
+                        f"expression")
+                elif previous == '':
+                    raise SyntaxError(
+                        f"expression cannot start with a '{expression[i]}', it's must occur after an operand or "
+                        f" an expression")
+            elif previous == '':
+                raise SyntaxError(
+                    f"expression cannot start with a '{expression[i]}', it's must occur after an operand or an "
+                    f"expression")
+            elif isinstance(previous, (LeftUnaryOperator, BinaryOperator)):
+                if current == previous:
+                    raise SyntaxError(
+                        f"'{expression[i]}' cannot occur in a row")
+                else:
+                    raise SyntaxError(
+                        f"the follow operations: '{get_key(previous)}', '{expression[i]}' cannot occur in a row")
 
             flag = True
-            previous = expression[i]
+            previous = OPERATOR_MAP.get(expression[i])
             current_operator = OPERATOR_MAP[expression[i]]
             while operator_stack and operand_stack and flag:
                 operator_top_stack = OPERATOR_MAP[operator_stack[-1]]
-                if current_operator[0] <= operator_top_stack[0]:
+                if current_operator.precedence <= operator_top_stack.precedence:
                     execute_operation(operand_stack, operator_stack)
                 else:
                     flag = False
             operator_stack.append(expression[i])
-        # Encountering closing parenthesis.
+        # Encountering a closing parenthesis.
         elif expression[i] == ')':
-            if not is_operator(previous) or previous == '!':
+            if not isinstance(previous, Operator) or isinstance(previous, RightUnaryOperator):
                 retrieve_until_parenthesis(operand_stack, operator_stack)
                 previous = expression[i]
             else:
-                raise SyntaxError(f") is not valid after the follow operator: {previous}")
+                raise SyntaxError(f"')' is invalid after '{get_key(previous)}'")
         elif expression[i] != " " and expression[i] != "\t":
             raise ValueError(f"Your expression contains invalid character(s) - '{expression[i]}'")
 
@@ -168,7 +211,7 @@ def main():
     while True:
         try:
             my_eval(input("Insert expression: "))
-        except EOFError:
+        except (EOFError, KeyboardInterrupt):
             print("Message: Shutting down...")
             return
         except Exception as e:

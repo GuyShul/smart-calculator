@@ -3,7 +3,7 @@ import math
 
 def addition(operand1: float, operand2: float) -> float:
     """
-    Method calculates addition of two operands.
+    Method calculates the addition of two operand.
     :param operand1: first operand.
     :param operand2: second operand.
     :return: Sum of two operands.
@@ -13,7 +13,7 @@ def addition(operand1: float, operand2: float) -> float:
 
 def subtraction(operand1: float, operand2: float) -> float:
     """
-    Method calculates subtraction of two operands.
+    Method calculates the subtraction of two operands.
     :param operand1: first operand.
     :param operand2: second operand.
     :return: Differance of two operands.
@@ -36,8 +36,8 @@ def division(operand1: float, operand2: float) -> float:
     Method divides two operands.
     :param operand1: first operand.
     :param operand2: second operand.
-    :return: Quotient of the division.
-    :raise ZeroDivisionError: when divider (second operand) is zero.
+    :return: Quotient of two operands.
+    :raise SyntaxError: when divider (second operand) is zero.
     """
     try:
         return operand1 / operand2
@@ -47,12 +47,15 @@ def division(operand1: float, operand2: float) -> float:
 
 def power(operand1: float, operand2: float) -> float:
     """
-    Method calculates first operand to the power on the second operand.
+    Method increases first operand in the power on the second operand.
     :param operand1: first operand.
     :param operand2: second operand.
-    :return: first operand to the power on the second operand.
+    :return: first operand in the power on the second operand.
     """
-    return math.pow(operand1, operand2)
+    try:
+        return math.pow(operand1, operand2)
+    except ValueError:
+        raise ValueError("Cannot execute power on negative base and decimal exponent (integrating square root)")
 
 
 def average(operand1: float, operand2: float) -> float:
@@ -113,22 +116,14 @@ def factorial(operand: float) -> float:
     Method calculates the factorial of a given operand.
     :param: a given operand.
     :return: factorial of the given operand.
-    :raise ValueError: when the operand is negative or decimal.
+    :raise SyntaxError: when the operand is negative or decimal.
     """
     result = 1
     x = 2
     if operand < 0:
         raise ValueError("Cannot execute factorial operation on a negative number")
-    if not operand.is_integer():
+    if not int(operand) == operand:
         raise ValueError("Cannot execute factorial operation on a decimal number")
     for x in range(x, int(operand + 1)):
         result *= x
     return result
-
-
-def remove_parenthesis(operator_stack: list[str]):
-    """
-    Method pops the last item in the stack of operands, intentionally for removing the opening parenthesis.
-    :param: a stack of operators.
-    """
-    operator_stack.pop()
