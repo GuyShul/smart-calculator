@@ -1,5 +1,6 @@
-from Mathematical_operations import *
-from OperatorType import *
+from Mathematical_operations import addition, subtraction, multiplication, division, power, modulo, average, \
+    max_operand, min_operand, neg, factorial
+from OperatorType import Operator, UnaryOperator, BinaryOperator, LeftUnaryOperator, RightUnaryOperator
 
 # A dictionary represents all the available operators.
 # The key is the operator's symbol and the value is an instance of it's appropriate class,
@@ -28,14 +29,6 @@ def is_operator(char: str) -> bool:
     return char in OPERATOR_MAP.keys()
 
 
-def get_key(val):
-    for key, value in OPERATOR_MAP.items():
-        if val == value:
-            return key
-
-    return "Unknown key"
-
-
 def is_unary(operator: str) -> bool:
     """
     Method returns whether the given operator is unary or not.
@@ -60,13 +53,13 @@ def execute_operation(operand_stack: list, operator_stack: list):
     if isinstance(operator, UnaryOperator):
         if operand_stack:
             operand = operand_stack.pop()
-            operand_stack.append(operator.operation(operand))
+            operand_stack.append(operator.get_operation()(operand))
         else:
             raise SyntaxError("Your expression is invalid")
     elif len(operand_stack) > 1:
         operand1 = operand_stack.pop()
         operand2 = operand_stack.pop()
-        operand_stack.append(operator.operation(operand2, operand1))
+        operand_stack.append(operator.get_operation()(operand2, operand1))
     else:
         raise SyntaxError("Your expression is invalid")
 
@@ -139,7 +132,7 @@ def my_eval(expression: str):
             current = OPERATOR_MAP.get(expression[i])
             if isinstance(current, UnaryOperator):
                 if isinstance(current, LeftUnaryOperator):
-                    if isinstance(previous, UnaryOperator) and previous.precedence != 0:
+                    if isinstance(previous, UnaryOperator) and previous.get_precedence() != 0:
                         if current == previous:
                             raise SyntaxError(
                                 f"'{expression[i]}' cannot occur in a row")
@@ -153,8 +146,8 @@ def my_eval(expression: str):
                             f"operand")
                 elif isinstance(previous, (BinaryOperator, LeftUnaryOperator)):
                     raise SyntaxError(
-                        f"'{expression[i]}' cannot occur after {get_key(previous)}, it's must occur after an operand or "
-                        f"expression")
+                        f"'{expression[i]}' cannot occur after '{expression[i - 1]}', it's must occur after"
+                        f" an operand or expression")
                 elif previous == '':
                     raise SyntaxError(
                         f"expression cannot start with a '{expression[i]}', it's must occur after an operand or "
@@ -169,14 +162,14 @@ def my_eval(expression: str):
                         f"'{expression[i]}' cannot occur in a row")
                 else:
                     raise SyntaxError(
-                        f"the follow operations: '{get_key(previous)}', '{expression[i]}' cannot occur in a row")
+                        f"the follow operations: '{expression[i - 1]}', '{expression[i]}' cannot occur in a row")
 
             flag = True
             previous = OPERATOR_MAP.get(expression[i])
             current_operator = OPERATOR_MAP[expression[i]]
             while operator_stack and operand_stack and flag:
                 operator_top_stack = OPERATOR_MAP[operator_stack[-1]]
-                if current_operator.precedence <= operator_top_stack.precedence:
+                if current_operator.get_precedence() <= operator_top_stack.get_precedence():
                     execute_operation(operand_stack, operator_stack)
                 else:
                     flag = False
@@ -187,7 +180,7 @@ def my_eval(expression: str):
                 retrieve_until_parenthesis(operand_stack, operator_stack)
                 previous = expression[i]
             else:
-                raise SyntaxError(f"')' is invalid after '{get_key(previous)}'")
+                raise SyntaxError(f"')' is invalid after '{expression[i - 1]}'")
         elif expression[i] != " " and expression[i] != "\t":
             raise ValueError(f"Your expression contains invalid character(s) - '{expression[i]}'")
 
