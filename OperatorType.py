@@ -72,6 +72,20 @@ class LeftUnaryOperator(UnaryOperator):
         super().__init__(precedence, operation)
 
 
+class MinusUnaryOperator(LeftUnaryOperator, BinaryOperator):
+    """
+    Class represents unary minus operator
+    """
+
+    def __init__(self, precedence: int, operation: Mathematical_operations):
+        """
+        Method initializes a new MinusUnaryOperator instance.
+        :param precedence: The precedence of the operator.
+        :param operation: an arithmetic function taken from "Mathematical_operations" file.
+        """
+        super().__init__(precedence, operation)
+
+
 class RightUnaryOperator(UnaryOperator):
     """
     Class represents unary operator that can only appear to the right of an operand, inherits from Unary Operator class.
