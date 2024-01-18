@@ -17,6 +17,7 @@ OPERATOR_MAP = {'+': BinaryOperator(1, addition),
                 '&': BinaryOperator(5, min_operand),
                 '~': LeftUnaryOperator(6, neg),
                 '!': RightUnaryOperator(6, factorial),
+                '#': RightUnaryOperator(6, sum_digits),
                 '--': MinusUnaryOperator(1, neg),
                 '(-)': LeftUnaryOperator(7, neg),
                 '(': LeftUnaryOperator(0, None)}

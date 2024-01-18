@@ -1,4 +1,4 @@
-import math
+from math import pow
 
 
 def addition(operand1: float, operand2: float) -> float:
@@ -53,7 +53,7 @@ def power(operand1: float, operand2: float) -> float:
     :return: first operand in the power on the second operand.
     """
     try:
-        return math.pow(operand1, operand2)
+        return pow(operand1, operand2)
     except ValueError:
         raise ValueError("Cannot execute power on negative base and decimal exponent (integrating square root)")
 
@@ -126,4 +126,21 @@ def factorial(operand: float) -> float:
         raise ValueError("Cannot execute factorial operation on a decimal number")
     for x in range(x, int(operand + 1)):
         result *= x
+    return result
+
+
+def sum_digits(operand: float) -> int:
+    """
+    Method sums all the digits of a number.
+    :param: a given operand.
+    :return: addition of number's digits.
+    :raise ValueError: when the operand is negative.
+    """
+    result = 0
+    if operand < 0:
+        raise ValueError('Cannot execute "sum digits" operation on a negative number')
+    operand = str(operand)
+    operand = operand.replace('.', '')
+    for digit in operand:
+        result += int(digit)
     return result
