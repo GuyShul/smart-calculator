@@ -1,7 +1,7 @@
-from Mathematical_operations import addition, subtraction, multiplication, division, power, modulo, average, \
-    max_operand, min_operand, neg, factorial, sum_digits
-from OperatorType import Operator, UnaryOperator, BinaryOperator, LeftUnaryOperator, MinusUnaryOperator, \
-    RightUnaryOperator
+from calculator.mathematical_operations import (addition, subtraction, multiplication, division, power, modulo,
+                                                average, max_operand, min_operand, neg, factorial, sum_digits)
+from calculator.operators.operator_type import (Operator, UnaryOperator, BinaryOperator, LeftUnaryOperator,
+                                                MinusUnaryOperator, RightUnaryOperator)
 
 # A dictionary represents all the available operators.
 # The key is the operator's symbol and the value is an instance of it's appropriate class,
@@ -40,13 +40,13 @@ def execute_operation(operand_stack: list, operator_stack: list):
             operand = operand_stack.pop()
             operand_stack.append(operator.get_operation()(operand))
         else:
-            raise SyntaxError("Your expression is invalid")
+            raise SyntaxError("Your expression is invalid, not enough operands for unary operation")
     elif len(operand_stack) > 1:
         operand1 = operand_stack.pop()
         operand2 = operand_stack.pop()
         operand_stack.append(round(operator.get_operation()(operand2, operand1), 10))
     else:
-        raise SyntaxError("Your expression is invalid")
+        raise SyntaxError("Your expression is invalid, not enough operands for binary operation")
 
 
 def retrieve_until_parenthesis(operand_stack: list, operator_stack: list):
@@ -108,6 +108,8 @@ def my_eval(expression: str):
                         is_over = True
                 if dots > 1:
                     raise SyntaxError("Invalid decimal number - cannot contain two dots or more!")
+                elif single_operand == '.':
+                    raise SyntaxError("Illegal value - '.'")
                 i = j - 1
                 operand_stack.append(float(single_operand))
             else:
@@ -119,16 +121,16 @@ def my_eval(expression: str):
             if isinstance(current, UnaryOperator) or symbol == '-':
                 if isinstance(current, LeftUnaryOperator) or symbol == '-':
                     if symbol == '-':
-                        if previous == '' or (
+                        if (previous == '' or (
                                 isinstance(previous,
-                                           LeftUnaryOperator) and previous.get_precedence() == 0) or isinstance(
-                                        previous, MinusUnaryOperator):
+                                           LeftUnaryOperator) and previous.get_precedence() == 0) or
+                                isinstance(previous, MinusUnaryOperator)):
                             symbol = '--'
                             current = OPERATOR_MAP[symbol]
                         elif isinstance(previous, (BinaryOperator, LeftUnaryOperator)):
                             symbol = '(-)'
                             current = OPERATOR_MAP[symbol]
-                        elif not isinstance(previous, Operator):
+                        elif isinstance(previous, RightUnaryOperator) or not isinstance(previous, Operator):
                             pass
                         else:
                             raise SyntaxError(
@@ -140,8 +142,8 @@ def my_eval(expression: str):
                                 f"'{symbol}' cannot occur in a row")
                         else:
                             raise SyntaxError(
-                                f"'{symbol}' cannot occur after an operator, it's must occur to the left of an "
-                                f"operand")
+                                f"'Illegal use of '{symbol}', must occur after binary or at the beginning of the "
+                                f"expression")
                     elif not isinstance(previous, Operator) and previous != '':
                         raise SyntaxError(
                             f"'{symbol}' cannot occur after an operand, it's must occur to the left of an "
@@ -183,7 +185,7 @@ def my_eval(expression: str):
             else:
                 raise SyntaxError(f"')' is invalid after '{expression[i - 1]}, missing operand")
         elif expression[i] != " " and expression[i] != "\t":
-            raise ValueError(f"Your expression contains invalid character(s) - '{expression[i]}'")
+            raise SyntaxError(f"Your expression contains invalid character(s) - '{expression[i]}'")
 
         i += 1
 
@@ -194,9 +196,9 @@ def my_eval(expression: str):
     if operand_stack:
         result = operand_stack.pop()
         if int(result) == result:
-            print(int(result))
+            return int(result)
         else:
-            print(result)
+            return result
     else:
         raise SyntaxError("Empty statement cannot be calculated")
 
@@ -204,7 +206,7 @@ def my_eval(expression: str):
 def main():
     while True:
         try:
-            my_eval(input("Insert expression: "))
+            print("Result:", my_eval(input("Insert expression: ")))
         except (EOFError, KeyboardInterrupt):
             print("Message: Shutting down...")
             return
