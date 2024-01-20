@@ -1,5 +1,5 @@
 import pytest
-from main import my_eval
+from calculator.parser import evaluate
 
 
 @pytest.mark.parametrize("expression", [
@@ -19,7 +19,7 @@ def test_simple_invalid(expression):
     :param expression: An expression to be tested.
     """
     with pytest.raises(SyntaxError):
-        my_eval(expression)
+        evaluate(expression)
 
 
 @pytest.mark.parametrize("expression, expected", [
@@ -45,7 +45,7 @@ def test_valid_expressions(expression, expected):
     :param expression: An expression to be tested.
     :param expected: The expected result of the calculation.
     """
-    assert my_eval(expression) == expected
+    assert evaluate(expression) == expected
 
 
 @pytest.mark.parametrize("expression, expected", [
@@ -76,7 +76,7 @@ def test_valid_complex_expressions(expression, expected):
     :param expression: An expression to be tested.
     :param expected: The expected result of the calculation.
     """
-    assert my_eval(expression) == expected
+    assert evaluate(expression) == expected
 
 
 @pytest.mark.parametrize("expression, exception", [
@@ -104,4 +104,4 @@ def test_complex_invalid(expression, exception):
 
     """
     with pytest.raises(exception):
-        my_eval(expression)
+        evaluate(expression)

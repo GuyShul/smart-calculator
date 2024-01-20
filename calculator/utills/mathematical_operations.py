@@ -52,6 +52,8 @@ def power(operand1: float, operand2: float) -> float:
     :param operand2: second operand.
     :return: first operand in the power on the second operand.
     """
+    if operand1 == 0 and operand2 < 0:
+        raise ZeroDivisionError("0 cannot be raised to a negative power")
     try:
         return pow(operand1, operand2)
     except ValueError:

@@ -1,4 +1,4 @@
-from calculator import mathematical_operations
+from calculator.utills import mathematical_operations
 
 
 class Operator(object):
