@@ -1,7 +1,11 @@
 from calculator.mathematical_operations import (addition, subtraction, multiplication, division, power, modulo,
                                                 average, max_operand, min_operand, neg, factorial, sum_digits)
-from calculator.operators.operator_type import (Operator, UnaryOperator, BinaryOperator, LeftUnaryOperator,
-                                                MinusUnaryOperator, RightUnaryOperator)
+from calculator.operators.binary_operator import BinaryOperator
+from calculator.operators.operator_type import Operator
+from calculator.operators.unary_operators.left_unary_operator import LeftUnaryOperator
+from calculator.operators.unary_operators.minus_unary_operator import MinusUnaryOperator
+from calculator.operators.unary_operators.right_unary_operator import RightUnaryOperator
+from calculator.operators.unary_operators.unary_operator import UnaryOperator
 
 # A dictionary represents all the available operators.
 # The key is the operator's symbol and the value is an instance of it's appropriate class,
