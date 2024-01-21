@@ -41,8 +41,8 @@ def division(operand1: float, operand2: float) -> float:
     """
     try:
         return operand1 / operand2
-    except ZeroDivisionError as zde:
-        raise zde
+    except ZeroDivisionError:
+        raise ZeroDivisionError("Cannot divide by zero")
 
 
 def power(operand1: float, operand2: float) -> float:
@@ -53,11 +53,11 @@ def power(operand1: float, operand2: float) -> float:
     :return: first operand in the power on the second operand.
     """
     if operand1 == 0 and operand2 < 0:
-        raise ZeroDivisionError("0 cannot be raised to a negative power")
+        raise ArithmeticError("0 cannot be raised to a negative power")
     try:
         return pow(operand1, operand2)
-    except ValueError:
-        raise ValueError("Cannot execute power on negative base and decimal exponent (integrating square root)")
+    except ArithmeticError:
+        raise ArithmeticError("Cannot execute power on negative base and decimal exponent (integrating square root)")
 
 
 def average(operand1: float, operand2: float) -> float:
@@ -100,8 +100,8 @@ def modulo(operand1: float, operand2: float) -> float:
     """
     try:
         return operand1 % operand2
-    except ZeroDivisionError as zde:
-        raise zde
+    except ZeroDivisionError:
+        raise ZeroDivisionError("Cannot divide by zero")
 
 
 def neg(operand: float) -> float:
@@ -123,9 +123,9 @@ def factorial(operand: float) -> float:
     result = 1
     x = 2
     if operand < 0:
-        raise ValueError("Cannot execute factorial operation on a negative number")
+        raise ArithmeticError("Cannot execute factorial operation on a negative number")
     if not int(operand) == operand:
-        raise ValueError("Cannot execute factorial operation on a decimal number")
+        raise ArithmeticError("Cannot execute factorial operation on a decimal number")
     for x in range(x, int(operand + 1)):
         result *= x
     return result
@@ -140,7 +140,7 @@ def sum_digits(operand: float) -> int:
     """
     result = 0
     if operand < 0:
-        raise ValueError('Cannot execute "sum digits" operation on a negative number')
+        raise ArithmeticError('Cannot execute "sum digits" operation on a negative number')
     operand = format(operand, '.10f')
     operand = operand.replace('.', '')
     for digit in operand:

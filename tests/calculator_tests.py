@@ -1,24 +1,28 @@
 import pytest
 from calculator.parser import evaluate
+from calculator.utills.custom_exceptions.operator_syntax_error import OperatorSyntaxError
+from calculator.utills.custom_exceptions.parentheses_syntax_error import ParenthesesSyntaxError
+from calculator.utills.custom_exceptions.unknown_character_error import UnknownCharacterError
+from calculator.utills.custom_exceptions.number_format_error import NumberFormatError
 
 
-@pytest.mark.parametrize("expression", [
-    "6^@9 ",
-    "+7+1",
-    "3//5 ",
-    "4**8 ",
-    "32- ",
-    "*34*2/",
-    "",
-    "      ",
-    "a",
+@pytest.mark.parametrize("expression, exception", [
+    ("6^@9 ", OperatorSyntaxError),
+    ("+7+1", OperatorSyntaxError),
+    ("3//5 ", OperatorSyntaxError),
+    ("4**8 ", OperatorSyntaxError),
+    ("32- ", OperatorSyntaxError),
+    ("*34*2/", OperatorSyntaxError),
+    ("", ValueError),
+    ("      ", ValueError),
+    ("a", UnknownCharacterError)
 ])
-def test_simple_invalid(expression):
+def test_simple_invalid(expression, exception):
     """
     Testing simple invalid expression examples.
     :param expression: An expression to be tested.
     """
-    with pytest.raises(SyntaxError):
+    with pytest.raises(exception):
         evaluate(expression)
 
 
@@ -80,21 +84,20 @@ def test_valid_complex_expressions(expression, expected):
 
 
 @pytest.mark.parametrize("expression, exception", [
-    ("3^.0+", SyntaxError),
+    ("3^.0+", OperatorSyntaxError),
     ("5/-0", ZeroDivisionError),
-    ("6*/2", SyntaxError),
-    ("3--+10", SyntaxError),
-    ("9~2", SyntaxError),
-    ("6+4.6.4", SyntaxError),
-    ("a", SyntaxError),
-    ("2+-2#", ValueError),
-    ("~2!-3", ValueError),
-    ("((7) * 6))", SyntaxError),
-    ("4*(3+4", SyntaxError),
-    ("2~!", SyntaxError),
-    ("!5", SyntaxError),
-    ("4@(3+4", SyntaxError),
-
+    ("6*/2", OperatorSyntaxError),
+    ("3--+10", OperatorSyntaxError),
+    ("9~2", OperatorSyntaxError),
+    ("6+4.6.4", NumberFormatError),
+    ("2+-2#", ArithmeticError),
+    ("~2!-3", ArithmeticError),
+    ("()", ParenthesesSyntaxError),
+    ("((7) * 6))", ParenthesesSyntaxError),
+    ("4*(3+4", ParenthesesSyntaxError),
+    ("2~!", OperatorSyntaxError),
+    ("!5", OperatorSyntaxError),
+    ("4@(3+4", ParenthesesSyntaxError),
 ])
 def test_complex_invalid(expression, exception):
     """

@@ -5,6 +5,9 @@ from calculator.operators.unary_operators.minus_unary_operator import MinusUnary
 from calculator.operators.unary_operators.right_unary_operator import RightUnaryOperator
 from calculator.operators.unary_operators.unary_operator import UnaryOperator
 from calculator.utills.calculator_info import OPERATOR_MAP
+from calculator.utills.custom_exceptions.number_format_error import NumberFormatError
+from calculator.utills.custom_exceptions.operator_syntax_error import OperatorSyntaxError
+from calculator.utills.custom_exceptions.parentheses_syntax_error import ParenthesesSyntaxError
 
 
 def execute_operation(operand_stack: list, operator_stack: list):
@@ -17,20 +20,20 @@ def execute_operation(operand_stack: list, operator_stack: list):
     key = operator_stack.pop()
     operator = OPERATOR_MAP[key]
     if key == '(':
-        raise SyntaxError("Missing closing parenthesis")
+        raise ParenthesesSyntaxError("Missing closing parenthesis")
 
     if isinstance(operator, UnaryOperator):
         if operand_stack:
             operand = operand_stack.pop()
             operand_stack.append(operator.get_operation()(operand))
         else:
-            raise SyntaxError("Your expression is invalid, not enough operands for unary operation")
+            raise OperatorSyntaxError("Your expression is invalid, not enough operands for unary operation")
     elif len(operand_stack) > 1:
         operand1 = operand_stack.pop()
         operand2 = operand_stack.pop()
         operand_stack.append(round(operator.get_operation()(operand2, operand1), 10))
     else:
-        raise SyntaxError("Your expression is invalid, not enough operands for binary operation")
+        raise OperatorSyntaxError("Your expression is invalid, not enough operands for binary operation")
 
 
 def retrieve_until_parenthesis(operand_stack: list, operator_stack: list):
@@ -44,7 +47,7 @@ def retrieve_until_parenthesis(operand_stack: list, operator_stack: list):
     if operator_stack:
         operator_stack.pop()
     else:
-        raise SyntaxError("Missing opening parenthesis")
+        raise ParenthesesSyntaxError("Missing opening parenthesis")
 
 
 def parse_operand(expression: str, i: int, previous: str, operand_stack: list[float]):
@@ -65,14 +68,14 @@ def parse_operand(expression: str, i: int, previous: str, operand_stack: list[fl
             else:
                 is_over = True
         if single_operand.replace('.', '') == '':
-            raise SyntaxError(f"Illegal value - '{single_operand}'")
+            raise NumberFormatError(f"Illegal value - '{single_operand}'")
         elif dots > 1:
-            raise SyntaxError("Invalid decimal number - cannot contain two dots or more!")
+            raise NumberFormatError("Invalid decimal number - cannot contain two dots or more!")
 
         i = j - 1
         operand_stack.append(float(single_operand))
     else:
-        raise SyntaxError(f"missing binary operation between '{expression[i - 1]}' and operand")
+        raise OperatorSyntaxError(f"missing binary operation between '{expression[i - 1]}' and operand")
     return i, previous
 
 
@@ -94,40 +97,40 @@ def parse_operator(expression, i, previous, operand_stack, operator_stack):
                 elif isinstance(previous, RightUnaryOperator) or not isinstance(previous, Operator):
                     pass
                 else:
-                    raise SyntaxError(
+                    raise OperatorSyntaxError(
                         f"'{symbol}' cannot occur after an operator, it's must occur to the left of an "
                         f"operand")
             elif isinstance(previous, UnaryOperator) and previous.get_precedence() != 0:
                 if current == previous:
-                    raise SyntaxError(
-                        f"'{symbol}' cannot occur in a row")
+                    raise OperatorSyntaxError(
+                        f"Invalid use of unary operation, '{symbol}' cannot occur in a row")
                 else:
-                    raise SyntaxError(
-                        f"'Illegal use of '{symbol}', must occur after binary or at the beginning of the "
-                        f"expression")
+                    raise OperatorSyntaxError(
+                        f"Invalid use of unary operation - '{symbol}' must occur after binary "
+                        f"operation or at the beginning of the expression")
             elif not isinstance(previous, Operator) and previous != '':
-                raise SyntaxError(
-                    f"'{symbol}' cannot occur after an operand, it's must occur to the left of an "
-                    f"operand")
+                raise OperatorSyntaxError(
+                    f"Invalid use of unary operation - '{symbol}' cannot occur after an operand, it's must occur to "
+                    f"the left of an operand")
         elif isinstance(previous, (BinaryOperator, LeftUnaryOperator)):
-            raise SyntaxError(
-                f"'{symbol}' cannot occur after '{expression[i - 1]}', it's must occur after"
-                f" an operand or expression")
+            raise OperatorSyntaxError(
+                f"Invalid use of unary operation - '{symbol}' cannot occur after '{expression[i - 1]}', it's must "
+                f"occur after an operand or expression")
         elif previous == '':
-            raise SyntaxError(
-                f"expression cannot start with a '{symbol}', it's must occur after an operand or "
-                f" an expression")
+            raise OperatorSyntaxError(
+                f"Invalid use of unary operation - expression cannot start with a '{symbol}', it's must occur after "
+                f"an operand or an expression")
     elif previous == '':
-        raise SyntaxError(
-            f"expression cannot start with a '{expression[i]}', it's must occur after an operand or an "
-            f"expression")
+        raise OperatorSyntaxError(
+            f"Invalid use of binary operation - expression cannot start with a '{expression[i]}', it's must occur "
+            f"after an operand or an expression")
     elif isinstance(previous, (LeftUnaryOperator, BinaryOperator)):
         if current == previous:
-            raise SyntaxError(
-                f"'{expression[i]}' cannot occur in a row")
+            raise OperatorSyntaxError(
+                f"Invalid use of binary operation, '{expression[i]}' cannot occur in a row")
         else:
-            raise SyntaxError(
-                f"the follow operations: '{expression[i - 1]}', '{symbol}' cannot occur in a row")
+            raise OperatorSyntaxError(
+                f"Invalid use of binary operation, '{expression[i - 1]}' and '{symbol}' cannot occur in a row")
 
     flag = True
     previous = OPERATOR_MAP.get(symbol)

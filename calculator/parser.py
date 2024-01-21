@@ -1,3 +1,6 @@
+from calculator.utills.custom_exceptions.operator_syntax_error import OperatorSyntaxError
+from calculator.utills.custom_exceptions.parentheses_syntax_error import ParenthesesSyntaxError
+from calculator.utills.custom_exceptions.unknown_character_error import UnknownCharacterError
 from calculator.operators.operator_type import Operator
 from calculator.operators.unary_operators.right_unary_operator import RightUnaryOperator
 from calculator.operators.unary_operators.left_unary_operator import LeftUnaryOperator
@@ -31,9 +34,11 @@ def evaluate(expression: str):
                 previous = OPERATOR_MAP.get(current)
                 operator_stack.append(current)
             elif isinstance(previous, RightUnaryOperator):
-                raise SyntaxError(f"missing binary operation between '{expression[i - 1]}' and parentheses")
+                raise OperatorSyntaxError(
+                    f"Invalid use of parenthesis, missing binary operation between '{expression[i - 1]}' and opening "
+                    f"parentheses")
             else:
-                raise SyntaxError("'(' cannot occur after an operand")
+                raise ParenthesesSyntaxError("Invalid use of closing parentheses, cannot occur after an operand")
 
         elif current.isdigit() or current == '.':
             i, previous = parse_operand(expression, i, previous, operand_stack)
@@ -46,10 +51,10 @@ def evaluate(expression: str):
                 retrieve_until_parenthesis(operand_stack, operator_stack)
                 previous = current
             else:
-                raise SyntaxError(f"')' is invalid after '{expression[i - 1]}, missing operand")
+                raise ParenthesesSyntaxError(f"Invalid use of parenthesis, missing operand")
 
         elif current != " " and current != "\t":
-            raise SyntaxError(f"Your expression contains invalid character(s) - '{current}'")
+            raise UnknownCharacterError(f"Your expression contains invalid character(s) - '{current}'")
 
         i += 1
 
@@ -64,4 +69,4 @@ def evaluate(expression: str):
         else:
             return result
     else:
-        raise SyntaxError("Empty statement cannot be calculated")
+        raise ValueError("Empty statement cannot be calculated")
