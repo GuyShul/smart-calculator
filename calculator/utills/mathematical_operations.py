@@ -141,7 +141,7 @@ def sum_digits(operand: float) -> int:
     result = 0
     if operand < 0:
         raise ValueError('Cannot execute "sum digits" operation on a negative number')
-    operand = str(operand)
+    operand = format(operand, '.10f')
     operand = operand.replace('.', '')
     for digit in operand:
         result += int(digit)
