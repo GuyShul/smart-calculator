@@ -21,6 +21,7 @@ def test_simple_invalid(expression, exception):
     """
     Testing simple invalid expression examples.
     :param expression: An expression to be tested.
+    :raise exception: The expected exception from the calculation.
     """
     with pytest.raises(exception):
         evaluate(expression)
@@ -104,7 +105,6 @@ def test_complex_invalid(expression, exception):
     Testing complex invalid expression examples.
     :param expression: An expression to be tested.
     :raise exception: The expected exception from the calculation.
-
     """
     with pytest.raises(exception):
         evaluate(expression)
