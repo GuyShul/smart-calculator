@@ -37,7 +37,7 @@ def division(operand1: float, operand2: float) -> float:
     :param operand1: first operand.
     :param operand2: second operand.
     :return: Quotient of two operands.
-    :raise SyntaxError: when divider (second operand) is zero.
+    :raise ZeroDivisionError: when divider (second operand) is zero.
     """
     try:
         return operand1 / operand2
@@ -51,11 +51,15 @@ def power(operand1: float, operand2: float) -> float:
     :param operand1: first operand.
     :param operand2: second operand.
     :return: first operand in the power on the second operand.
+    :raise OverFlowError: for especially large numbers which cannot be handled.
+    :raise ArithmeticError: for illogical math errors.
     """
     if operand1 == 0 and operand2 < 0:
         raise ArithmeticError("0 cannot be raised to a negative power")
     try:
         return pow(operand1, operand2)
+    except OverflowError:
+        raise OverflowError("math range exceeded, number is too large")
     except ArithmeticError:
         raise ArithmeticError("Cannot execute power on negative base and decimal exponent (integrating square root)")
 
@@ -96,7 +100,7 @@ def modulo(operand1: float, operand2: float) -> float:
     :param operand1: first operand.
     :param operand2: second operand.
     :return: The remainder of dividing operand1 by operand2.
-    :raise SyntaxError: when divider (second operand) is zero.
+    :raise ZeroDivisionError: when divider (second operand) is zero.
     """
     try:
         return operand1 % operand2
@@ -118,7 +122,7 @@ def factorial(operand: float) -> float:
     Method calculates the factorial of a given operand.
     :param: a given operand.
     :return: factorial of the given operand.
-    :raise SyntaxError: when the operand is negative or decimal.
+    :raise ArithmeticError: when the operand is negative or decimal.
     """
     result = 1
     x = 2
@@ -136,7 +140,7 @@ def sum_digits(operand: float) -> int:
     Method sums all the digits of a number.
     :param: a given operand.
     :return: addition of number's digits.
-    :raise ValueError: when the operand is negative.
+    :raise ArithmeticError: when the operand is negative.
     """
     result = 0
     if operand < 0:

@@ -64,7 +64,7 @@ def evaluate(expression: str):
 
     if operand_stack:
         result = operand_stack.pop()
-        if int(result) == result:
+        if float(result).is_integer():
             return int(result)
         else:
             return result

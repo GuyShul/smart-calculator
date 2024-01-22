@@ -5,7 +5,7 @@ def calculate():
     while True:
         try:
             print("Result:", evaluate(input("Insert expression: ")))
-        except (EOFError, KeyboardInterrupt):
+        except EOFError:
             print("Message: Shutting down...")
             return
         except Exception as e:

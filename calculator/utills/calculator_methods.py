@@ -51,6 +51,14 @@ def retrieve_until_parenthesis(operand_stack: list, operator_stack: list):
 
 
 def parse_operand(expression: str, i: int, previous: str, operand_stack: list[float]):
+    """
+    Method responsible to analyze current operand.
+    :param expression: the original expression.
+    :param i: the current position (in the loop).
+    :param previous: the previous operator or operand.
+    :param operand_stack: stack of operands.
+    :return: the updated position and previous.
+    """
     if previous == '' or (isinstance(previous, (LeftUnaryOperator, BinaryOperator))):
         previous = expression[i]
         single_operand = ""
@@ -73,13 +81,25 @@ def parse_operand(expression: str, i: int, previous: str, operand_stack: list[fl
             raise NumberFormatError("Invalid decimal number - cannot contain two dots or more!")
 
         i = j - 1
-        operand_stack.append(float(single_operand))
+        if single_operand.count('.') == 0:
+            operand_stack.append(int(single_operand))
+        else:
+            operand_stack.append(float(single_operand))
     else:
         raise OperatorSyntaxError(f"missing binary operation between '{expression[i - 1]}' and operand")
     return i, previous
 
 
 def parse_operator(expression, i, previous, operand_stack, operator_stack):
+    """
+    Method responsible to analyze current operator and make a decision on the right situation.
+    :param expression: the original expression.
+    :param i: the current position (in the loop).
+    :param previous: the previous operator or operand.
+    :param operand_stack: stack of operands.
+    :param operator_stack: stack of operators.
+    :return: the updated position and previous.
+    """
     symbol = expression[i]
     current = OPERATOR_MAP.get(symbol)
     if isinstance(current, UnaryOperator) or symbol == '-':
